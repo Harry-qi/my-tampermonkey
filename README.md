@@ -1,1 +1,2 @@
 # my-tampermonkey
+为了解决swagger复制的时候展开或者收缩详情问题，增加了一键复制url的功能，并且在复制url的地方阻止了默认行为
