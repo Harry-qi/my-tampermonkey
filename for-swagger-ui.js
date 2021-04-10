@@ -85,47 +85,88 @@ function waitForKeyElements (
     }
     waitForKeyElements.controlObj   = controlObj;
 }
+// 样式
+function cssStyle(){
+    $('head').append(`
+    <style>
+        .copy-span{
+            cursor: pointer;
+            border: 1px solid #dcdfe6;
+            display: inline-block,
+            outline: none;
+            padding: 12px 20px;
+            font-size: 14px;
+            border-radius: 4px;
+            color: #fff;
+            font-weight: 500;
+            background-color: #409eff;
+            border-color: #409eff;
+        }
+        #copy-tips{
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            top: 10px;
+            background-color: #f0f9eb;
+            color: #67c23a;
+            padding: 8px 16px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            display:flex;
+            align-items: center;
+            opacity: 0;
+            transition: opacity .3s,transform .4s,top .4s,-webkit-transform .4s;
+        }
+    </style>
+    `)
+}
 // 复制内容到剪贴板
 function copy(val) {
-  let transfer = document.createElement('input');
-  document.body.appendChild(transfer);
-  transfer.value = val; // 这里表示想要复制的内容
-  transfer.focus();
-  transfer.select();
-  if (document.execCommand('copy')) {
-      document.execCommand('copy');
-  }
-  transfer.blur();
-  document.body.removeChild(transfer);
+    var oInput = document.createElement('input');
+    oInput.value = val;
+    document.body.appendChild(oInput);
+    oInput.select(); 
+    document.execCommand("Copy"); 
+    oInput.className = 'oInput';
+    oInput.style.display='none';
+}
+// 创建提示语的DOM
+function ceatedTips(){
+    var spanDOM = $("<span id='copy-tips'>复制成功</span>")
+    $('body').append(spanDOM)
+}
+function showTips(){
+    var tipsDOM = document.querySelector('#copy-tips')
+    tipsDOM.style.top = '25px'
+    tipsDOM.style.opacity = '1'
+    setTimeout(()=>{
+        tipsDOM.style.top = '10px'
+        tipsDOM.style.opacity = '0'
+    },1000)
 }
   // 创建复制按钮
-function createBtn(){
-  var btn=document.createElement("BUTTON");
+function createSpan(){
+  var spanDOM=document.createElement("SPAN");
   var t=document.createTextNode("copy url");
-  btn.appendChild(t);
-  btn.style.cssText= `cursor: pointer;
-  border: 1px solid #dcdfe6;
-  outline: none;
-  padding: 12px 20px;
-  font-size: 14px;
-  border-radius: 4px;
-  color: #fff;
-  font-weight: 500;
-  background-color: #409eff;
-  border-color: #409eff;`
-  return btn
+  spanDOM.appendChild(t);
+  spanDOM.setAttribute('class','copy-span')
+  return spanDOM
 }
 (function() {
   'use strict';
   waitForKeyElements('#swagger-ui .information-container',init,true)
+  cssStyle()
   function init(){
+    ceatedTips()
     var con = document.querySelectorAll('.operation-tag-content') // 所有API的DOM
     con.forEach(item=>{
       item.childNodes.forEach(sonItem=>{
-        var btn = createBtn()
+        var btn = createSpan()
         btn.addEventListener('click',(e)=>{
             var urlContent = sonItem.childNodes[0].childNodes[0].childNodes[1].innerText
             copy(urlContent)
+            showTips()
             e.stopPropagation() // 防止点击复制按钮 展开了详情
         })
         sonItem.childNodes[0].childNodes[0].appendChild(btn)
@@ -133,7 +174,12 @@ function createBtn(){
         sonItem.childNodes[0].childNodes[0].childNodes[1].style.marginRight = '30px'
         sonItem.childNodes[0].childNodes[0].childNodes[1].style.marginLeft = '30px'
         // 防止点击api的DOM展开了详情
-        sonItem.childNodes[0].childNodes[0].childNodes[1].addEventListener('click',(e)=>{ e.stopPropagation() })
+        sonItem.childNodes[0].childNodes[0].childNodes[1].addEventListener('click',(e)=>{ 
+            var urlContent = sonItem.childNodes[0].childNodes[0].childNodes[1].innerText
+            copy(urlContent)
+            showTips()
+            e.stopPropagation()
+        })
       })
     })
   }
