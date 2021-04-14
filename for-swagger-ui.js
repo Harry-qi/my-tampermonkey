@@ -89,19 +89,6 @@ function waitForKeyElements (
 function cssStyle(){
   $('head').append(`
   <style>
-      .copy-span{
-          cursor: pointer;
-          border: 1px solid #dcdfe6;
-          display: inline-block,
-          outline: none;
-          padding: 12px 20px;
-          font-size: 14px;
-          border-radius: 4px;
-          color: #fff;
-          font-weight: 500;
-          background-color: #409eff;
-          border-color: #409eff;
-      }
       #copy-tips{
           position: fixed;
           left: 50%;
@@ -145,30 +132,57 @@ function showTips(){
       tipsDOM.style.opacity = '0'
   },1000)
 }
-// 创建复制按钮
-function createSpan(){
-  var spanDOM=document.createElement("SPAN");
-  var t=document.createTextNode("copy url");
-  spanDOM.appendChild(t);
-  spanDOM.setAttribute('class','copy-span')
-  return spanDOM
-}
-function init(){
-  cssStyle()
-  createTips()
-  var con = document.querySelectorAll('.endpoints') // 所有API的DOM
-  con.forEach(item=>{
-    Array.from(item.children).forEach(cItem=>{
-      var pathDOM = cItem.querySelector(".path")
-      pathDOM.addEventListener('click',(e)=>{
+function clickFn(selector){
+  document.querySelectorAll(selector).forEach(sItem=>{
+    sItem.addEventListener('click',(e)=>{
         copy(e.target.innerText)
         showTips()
         e.stopPropagation()
       })
-    })
   })
+}
+function init(){
+  cssStyle()
+  createTips()
+  // 适配不同的swagger-ui
+  if(localStorage.getItem('mode')==='2'){
+    document.querySelectorAll('.opblock-tag').forEach(item=>{
+      item.click()
+      clickFn('.opblock-summary-path')
+    })
+  }else{
+    clickFn('.path')
+  }
+}
+function loadJs(url,callback,s,f,flag){
+  var script=document.createElement('script');
+  script.type="text/javascript";
+  if(typeof(callback)!="undefined"){
+    if(script.readyState){
+      script.onreadystatechange=function(){
+      if(script.readyState == "loaded" || script.readyState == "complete"){
+        script.onreadystatechange=null;
+        callback(s,f,flag);
+      }
+      }
+    }else{
+      script.onload=function(){
+        callback(s,f,flag);
+      }
+    }
+  }
+  script.src=url;
+  document.body.appendChild(script);
 }
 (function() {
 'use strict';
-waitForKeyElements('#swagger-ui-container #resources_container',init,true)
+// 适配不同的swagger-ui
+if(document.querySelector('#swagger-ui-container')){
+  localStorage.setItem('mode','1')
+  waitForKeyElements('#swagger-ui-container #resources_container',init,true)
+}
+if(document.querySelector('#swagger-ui')){
+  localStorage.setItem('mode','2')
+  loadJs(' https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js', waitForKeyElements,'.swagger-container',init,true)
+}
 })();
