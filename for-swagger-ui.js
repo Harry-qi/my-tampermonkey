@@ -162,12 +162,16 @@ function loadJs(url,callback,s,f,flag){
       script.onreadystatechange=function(){
       if(script.readyState == "loaded" || script.readyState == "complete"){
         script.onreadystatechange=null;
-        callback(s,f,flag);
+        setTimeout(()=>{
+          callback(s,f,flag);
+        })
       }
       }
     }else{
       script.onload=function(){
-        callback(s,f,flag);
+        setTimeout(()=>{
+          callback(s,f,flag);
+        })
       }
     }
   }
