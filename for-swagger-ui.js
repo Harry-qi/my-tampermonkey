@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         for-swagger-ui
 // @namespace    https://github.com/Harry-qi/my-tampermonkey
-// @version      0.1
+// @version      0.2
 // @description  for happy copy
 // @author       harry-qi
-// @match        https://*/swagger-ui.html
-// @match        http://*/swagger-ui.html
-// @match        https://*.utools.club/swagger-ui.html
+// @match        *://swagger-ui.html/*
+// @match        *://*/swagger-ui.html/*
+// @match        *://*/*/swagger-ui/*
 // @grant        none
 // @run-at document-end
 // ==/UserScript==
@@ -111,7 +111,8 @@ function cssStyle(){
 // 复制内容到剪贴板
 function copy(val) {
   var oInput = document.createElement('input');
-  oInput.value = val;
+   //去除零宽空格(webStorm会显示，vscode不会显示)
+  oInput.value = val.replace(/[\u200B-\u200D\uFEFF]/g, '');
   document.body.appendChild(oInput);
   oInput.select();
   document.execCommand("Copy");
@@ -146,10 +147,13 @@ function init(){
   createTips()
   // 适配不同的swagger-ui
   if(localStorage.getItem('mode')==='2'){
-    document.querySelectorAll('.opblock-tag').forEach(item=>{
-      item.click()
-      clickFn('.opblock-summary-path')
-    })
+    // api较多的时候，需要等请求结束再执行，这里延迟1s，可以适当调整
+    setTimeout(()=>{
+      document.querySelectorAll('.opblock-tag').forEach(item=>{
+        item.click()
+        clickFn('.opblock-summary-path')
+      })
+    },1000)
   }else{
     clickFn('.path')
   }
